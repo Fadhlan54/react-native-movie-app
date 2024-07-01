@@ -10,6 +10,8 @@ import {
 import { Movie } from '../types/app'
 import { API_ACCESS_TOKEN } from '@env'
 import MovieItem from '../components/movies/MovieItem'
+import { FontAwesome } from '@expo/vector-icons'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const coverImageSize = {
   backdrop: {
@@ -33,9 +35,12 @@ const MovieDetail = ({ route }: any): JSX.Element => {
     [],
   )
 
+  const [isFavorite, setIsFavorite] = React.useState(false)
+
   React.useEffect(() => {
     getMovieDetail()
     getMovieRecommendation()
+    checkIfFavorite()
   }, [])
 
   const getMovieDetail = (): void => {
@@ -78,6 +83,41 @@ const MovieDetail = ({ route }: any): JSX.Element => {
       })
   }
 
+  const checkIfFavorite = async (): Promise<void> => {
+    try {
+      const initialData: string | null =
+        await AsyncStorage.getItem('@FavoriteList')
+      if (initialData !== null) {
+        const favMovieList: Movie[] = JSON.parse(initialData)
+        const isFav = favMovieList.some((movie) => movie.id === id)
+        setIsFavorite(isFav)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const toggleFavorite = async (): Promise<void> => {
+    try {
+      const initialData: string | null =
+        await AsyncStorage.getItem('@FavoriteList')
+      let favMovieList: Movie[] = initialData ? JSON.parse(initialData) : []
+
+      if (isFavorite) {
+        favMovieList = favMovieList.filter((movie) => movie.id !== id)
+      } else {
+        if (movieDetail) {
+          favMovieList.push(movieDetail)
+        }
+      }
+
+      await AsyncStorage.setItem('@FavoriteList', JSON.stringify(favMovieList))
+      setIsFavorite(!isFavorite)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <ScrollView style={styles.container}>
       {movieDetail && (
@@ -89,10 +129,21 @@ const MovieDetail = ({ route }: any): JSX.Element => {
           style={styles.imageBackground}
         >
           <View style={styles.overlay}>
-            <Text style={styles.title}>{movieDetail.title}</Text>
-            <Text style={styles.rating}>
-              Rating: {movieDetail.vote_average}
-            </Text>
+            <View>
+              <Text style={styles.title}>{movieDetail.title}</Text>
+              <Text style={styles.rating}>
+                <FontAwesome name="star" size={16} color="yellow" />{' '}
+                {movieDetail.vote_average.toFixed(1)}
+              </Text>
+            </View>
+
+            <FontAwesome
+              name={isFavorite ? 'heart' : 'heart-o'}
+              size={24}
+              color="pink"
+              style={styles.favoriteIcon}
+              onPress={toggleFavorite}
+            />
           </View>
         </ImageBackground>
       )}
@@ -148,38 +199,29 @@ const MovieDetail = ({ route }: any): JSX.Element => {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginLeft: 6,
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  purpleLabel: {
-    width: 20,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#8978A4',
-  },
   container: {
     flex: 1,
   },
   imageBackground: {
     width: '100%',
-    height: 300,
+    height: 240,
     justifyContent: 'flex-end',
   },
   overlay: {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 10,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
   },
   title: {
     color: '#fff',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   rating: {
-    color: '#fff',
-    fontSize: 18,
+    color: 'yellow',
+    fontSize: 14,
   },
   detailsContainer: {
     padding: 10,
@@ -201,6 +243,18 @@ const styles = StyleSheet.create({
   infoText: {
     marginBottom: 5,
   },
+  header: {
+    marginLeft: 6,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  purpleLabel: {
+    width: 20,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#8978A4',
+  },
   recommendationsTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -221,6 +275,9 @@ const styles = StyleSheet.create({
   movieList: {
     paddingLeft: 4,
     marginTop: 8,
+  },
+  favoriteIcon: {
+    marginLeft: 'auto',
   },
 })
 
