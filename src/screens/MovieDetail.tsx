@@ -8,20 +8,17 @@ type RootStackParamList = {
   MovieDetail: undefined
 }
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<
+type MovieDetailScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
-  'Home'
+  'MovieDetail'
 >
 
-export default function Home(): JSX.Element {
-  const navigation = useNavigation<HomeScreenNavigationProp>()
+const MovieDetail = (): JSX.Element => {
+  const navigation = useNavigation<MovieDetailScreenNavigationProp>()
   return (
     <View style={styles.container}>
-      <Text>Movie Page</Text>
-      <Button
-        title="Pergi ke Movie Detail"
-        onPress={() => navigation.navigate('MovieDetail')}
-      />
+      <Text>Movie Detail Screen</Text>
+      <Button title="Kembali" onPress={() => navigation.navigate('Home')} />
     </View>
   )
 }
@@ -33,3 +30,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 })
+
+export default MovieDetail
