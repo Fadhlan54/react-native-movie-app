@@ -1,12 +1,27 @@
 import React from 'react'
-import { ImageBackground, Text, StyleSheet, View } from 'react-native'
+import {
+  ImageBackground,
+  Text,
+  StyleSheet,
+  View,
+  TouchableOpacity,
+} from 'react-native'
 import { FontAwesome } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useNavigation, StackActions } from '@react-navigation/native'
 import type { MovieItemProps } from '../../types/app'
 
 const MovieItem = ({ movie, size, coverType }: MovieItemProps): JSX.Element => {
+  // Tambahkan code di bawah
+  const navigation = useNavigation()
+  const pushAction = StackActions.push('MovieDetail', { id: movie.id })
   return (
-    <View>
+    // Ganti <View> dengan <TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => {
+        navigation.dispatch(pushAction)
+      }}
+    >
       <ImageBackground
         resizeMode="cover"
         style={[size, styles.backgroundImage]}
@@ -29,7 +44,7 @@ const MovieItem = ({ movie, size, coverType }: MovieItemProps): JSX.Element => {
           </View>
         </LinearGradient>
       </ImageBackground>
-    </View>
+    </TouchableOpacity>
   )
 }
 
